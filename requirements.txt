@@ -1,0 +1,9 @@
+asgiref==3.11.0
+Django==5.2.11
+django-unfold==0.77.1
+load-dotenv==0.1.0
+pillow==12.1.0
+psycopg2==2.9.11
+pyperclip==1.11.0
+python-dotenv==1.2.1
+sqlparse==0.5.5
