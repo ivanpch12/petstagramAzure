@@ -13,28 +13,32 @@ def create_sample_data(apps, schema_editor):
 
     user = User.objects.filter(is_superuser=True).first()
     if not user:
-        user = User.objects.create_superuser(
+        user = User.objects.create(
             email='admin@admin.com',
-            password='password123'
+            password=make_password('password123'),
+            is_superuser=True
         )
 
     pet1, _ = Pet.objects.get_or_create(
         name='Buddy',
         personal_photo='https://i.natgeofe.com/n/4f5aaece-3300-41a4-b8a5-adfdcdbea36d/domestic-cat_thumb_3x2.jpg',
         date_of_birth='2020-05-15',
-        slug=slugify('Buddy')
+        slug=slugify('Buddy'),
+        user=user
     )
     pet2, _ = Pet.objects.get_or_create(
         name='Whiskers',
         personal_photo='https://www.humanesociety.org/sites/default/files/styles/1240x698/public/2022-07/kitten-paws-getty-1246143529.jpg',
         date_of_birth='2019-11-20',
-        slug=slugify('Whiskers')
+        slug=slugify('Whiskers'),
+        user=user
     )
     pet3, _ = Pet.objects.get_or_create(
         name='Rocky',
         personal_photo='https://g.petango.com/photos/1090/13271871-1-pb.jpg',
         date_of_birth='2021-01-01',
-        slug=slugify('Rocky')
+        slug=slugify('Rocky'),
+        user=user
     )
 
     photo1, _ = Photo.objects.get_or_create(
