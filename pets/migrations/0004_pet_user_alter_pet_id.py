@@ -1,45 +1,43 @@
-from django.conf import settings
+import django.db.models.deletion
 from django.db import migrations, models
 
 
-def assign_superuser_to_pets(apps, schema_editor):
+def set_user_for_existing_pets(apps, schema_editor):
+    User = apps.get_model('accounts', 'AppUser')  # Точно app label + Model
     Pet = apps.get_model('pets', 'Pet')
-    User = apps.get_model(settings.AUTH_USER_MODEL)
 
-    user = User.objects.filter(is_superuser=True).first()
-    if not user:
-        user = User.objects.create_superuser(email='admin@admin.com', password='password123')
+    superuser = User.objects.filter(is_superuser=True).first()
+
+    if not superuser:
+        superuser = User.objects.create(
+            email='admin@admin.com',
+            password='!',
+            is_superuser=True
+        )
 
     for pet in Pet.objects.all():
-        if not pet.user_id:
-            pet.user = user
-            pet.save()
+        pet.user = superuser
+        pet.save()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
         ('pets', '0003_populate_pet_model'),
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        migrations.swappable_dependency('accounts.AppUser'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='pet',
             name='user',
-            field=models.ForeignKey(
-                null=True,
-                on_delete=models.CASCADE,
-                to=settings.AUTH_USER_MODEL,
-            ),
+            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='accounts.AppUser'),
+            preserve_default=False,
         ),
-        migrations.RunPython(assign_superuser_to_pets),
         migrations.AlterField(
             model_name='pet',
-            name='user',
-            field=models.ForeignKey(
-                on_delete=models.CASCADE,
-                to=settings.AUTH_USER_MODEL,
-            ),
+            name='id',
+            field=models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
         ),
+        migrations.RunPython(set_user_for_existing_pets),
     ]
