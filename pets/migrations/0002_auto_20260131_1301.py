@@ -13,10 +13,9 @@ def create_sample_data(apps, schema_editor):
 
     user = User.objects.filter(is_superuser=True).first()
     if not user:
-        user = User.objects.create(
-            email='testuser1@example.com',
-            password=make_password('password123'),
-            is_superuser=True
+        user = User.objects.create_superuser(
+            email='admin@admin.com',
+            password='password123'
         )
 
     pet1, _ = Pet.objects.get_or_create(
