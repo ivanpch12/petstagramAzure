@@ -1,22 +1,21 @@
 import django.db.models.deletion
-from django.db import migrations, models
 from django.conf import settings
+from django.db import migrations, models
 
 
 def set_user_for_existing_pets(apps, schema_editor):
-    User = apps.get_model('accounts', 'AppUser')
+    User = apps.get_model(settings.AUTH_USER_MODEL)
     Pet = apps.get_model('pets', 'Pet')
 
-    superuser = User.objects.filter(is_superuser=True).first()
-    if not superuser:
-        superuser = User.objects.create(
+    user = User.objects.filter(is_superuser=True).first()
+    if not user:
+        user = User.objects.create_superuser(
             email='admin@admin.com',
-            password='!',
-            is_superuser=True
+            password='admin123'
         )
 
     for pet in Pet.objects.all():
-        pet.user = superuser
+        pet.user = user
         pet.save()
 
 
@@ -46,10 +45,5 @@ class Migration(migrations.Migration):
                 to=settings.AUTH_USER_MODEL,
                 on_delete=django.db.models.deletion.CASCADE,
             ),
-        ),
-        migrations.AlterField(
-            model_name='pet',
-            name='id',
-            field=models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
         ),
     ]
