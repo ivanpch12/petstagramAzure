@@ -1,15 +1,20 @@
-from django.db import migrations, models
-import django.db.models.deletion
 from django.conf import settings
+from django.db import migrations, models
 
-def set_user_for_existing_pets(apps, schema_editor):
-    User = apps.get_model(settings.AUTH_USER_MODEL.split('.')[-1].capitalize(), settings.AUTH_USER_MODEL.split('.')[0])
+
+def assign_superuser_to_pets(apps, schema_editor):
     Pet = apps.get_model('pets', 'Pet')
-    superuser = User.objects.filter(is_superuser=True).first()
-    if superuser:
-        for pet in Pet.objects.all():
-            pet.user = superuser
+    User = apps.get_model(settings.AUTH_USER_MODEL)
+
+    user = User.objects.filter(is_superuser=True).first()
+    if not user:
+        user = User.objects.create_superuser(email='admin@admin.com', password='password123')
+
+    for pet in Pet.objects.all():
+        if not pet.user_id:
+            pet.user = user
             pet.save()
+
 
 class Migration(migrations.Migration):
 
@@ -22,12 +27,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='pet',
             name='user',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(
+                null=True,
+                on_delete=models.CASCADE,
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
-        migrations.RunPython(set_user_for_existing_pets),
+        migrations.RunPython(assign_superuser_to_pets),
         migrations.AlterField(
             model_name='pet',
             name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(
+                on_delete=models.CASCADE,
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]
